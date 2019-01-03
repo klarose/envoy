@@ -3,6 +3,7 @@
 #include <arpa/inet.h>
 
 #include "common/common/assert.h"
+#include "common/network/socket_option_factory.h"
 
 namespace Envoy {
 namespace Extensions {
@@ -13,10 +14,16 @@ constexpr uint8_t OriginalSrcSocketOption::IPV4_KEY;
 constexpr uint8_t OriginalSrcSocketOption::IPV6_KEY;
 
 OriginalSrcSocketOption::OriginalSrcSocketOption(
-    Network::Address::InstanceConstSharedPtr src_address)
+    Network::Address::InstanceConstSharedPtr src_address, uint32_t mark)
     : src_address_(std::move(src_address)) {
   // Source transparency only works on IP connections.
   ASSERT(src_address_->type() == Network::Address::Type::Ip);
+
+  auto mark_option = Network::SocketOptionFactory::buildSocketMarkOptions(mark);
+  options_to_apply_.insert(options_to_apply_.end(), mark_option->begin(), mark_option->end());
+  auto transparent_option = Network::SocketOptionFactory::buildIpTransparentOptions();
+  options_to_apply_.insert(options_to_apply_.end(), transparent_option->begin(),
+                           transparent_option->end());
 }
 
 bool OriginalSrcSocketOption::setOption(
