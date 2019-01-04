@@ -31,11 +31,12 @@ bool OriginalSrcSocketOption::setOption(
     socket.setLocalAddress(src_address_);
   }
 
+  // TODO(klarose): Add some UT for this and the failure case when we actually add options to this.
   bool result = true;
-  std::for_each(options_to_apply_.begin(), options_to_apply_.end(),
-                [&socket, state](const Network::Socket::OptionConstSharedPtr& option) {
-                  option->setOption(socket, state);
-                });
+  for (const auto& option : options_to_apply_) {
+    result &= option->setOption(socket, state);
+  }
+
   return result;
 }
 
@@ -48,6 +49,11 @@ template <typename T> void addressIntoVector(std::vector<uint8_t>& vec, const T&
 }
 
 void OriginalSrcSocketOption::hashKey(std::vector<uint8_t>& key) const {
+
+  // Note: we're assuming that there cannot be a conflict between IPv6 addresses here. If an IPv4
+  // address is mapped into an IPv6 address using an IPv4-Mapped IPv6 Address (RFC4921), then it's
+  // possible the hashes will be different despite the IP address used by the connection being
+  // the same.
   if (src_address_->ip()->version() == Network::Address::IpVersion::v4) {
     // note raw_address is already in network order
     uint32_t raw_address = src_address_->ip()->ipv4()->address();
