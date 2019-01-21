@@ -8,6 +8,7 @@
 #include "envoy/event/timer.h"
 #include "envoy/http/conn_pool.h"
 #include "envoy/network/connection.h"
+#include "envoy/network/transport_socket.h"
 #include "envoy/stats/timespan.h"
 #include "envoy/upstream/upstream.h"
 
@@ -32,7 +33,8 @@ class ConnPoolImpl : public ConnectionPool::Instance, public ConnPoolImplBase {
 public:
   ConnPoolImpl(Event::Dispatcher& dispatcher, Upstream::HostConstSharedPtr host,
                Upstream::ResourcePriority priority,
-               const Network::ConnectionSocket::OptionsSharedPtr& options);
+               const Network::ConnectionSocket::OptionsSharedPtr& options,
+               std::shared_ptr<std::vector<Network::TransportSocketOptionsSharedPtr>> transport_options);
 
   ~ConnPoolImpl();
 
@@ -120,6 +122,7 @@ protected:
   const Network::ConnectionSocket::OptionsSharedPtr socket_options_;
   Event::TimerPtr upstream_ready_timer_;
   bool upstream_ready_enabled_{false};
+  std::shared_ptr<std::vector<Network::TransportSocketOptionsSharedPtr>> transport_options_;
 };
 
 /**
@@ -129,8 +132,9 @@ class ConnPoolImplProd : public ConnPoolImpl {
 public:
   ConnPoolImplProd(Event::Dispatcher& dispatcher, Upstream::HostConstSharedPtr host,
                    Upstream::ResourcePriority priority,
-                   const Network::ConnectionSocket::OptionsSharedPtr& options)
-      : ConnPoolImpl(dispatcher, host, priority, options) {}
+                   const Network::ConnectionSocket::OptionsSharedPtr& options,
+                   std::shared_ptr<std::vector<Network::TransportSocketOptionsSharedPtr>> transport_options)
+      : ConnPoolImpl(dispatcher, host, priority, options, transport_options) {}
 
   // ConnPoolImpl
   CodecClientPtr createCodecClient(Upstream::Host::CreateConnectionData& data) override;

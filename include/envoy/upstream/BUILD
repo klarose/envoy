@@ -62,6 +62,7 @@ envoy_cc_library(
     hdrs = ["load_balancer.h"],
     deps = [
         ":upstream_interface",
+        "//include/envoy/stream_info:stream_info_interface",
         "//include/envoy/router:router_interface",
         "//include/envoy/upstream:types_interface",
     ],

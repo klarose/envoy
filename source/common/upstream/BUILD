@@ -124,6 +124,7 @@ envoy_cc_library(
         "//source/common/common:assert_lib",
         "//source/common/common:stack_array",
         "//source/common/protobuf:utility_lib",
+        "//source/common/stream_info:stream_info_lib",
     ],
 )
 

@@ -55,7 +55,8 @@ public:
   Http::ConnectionPool::InstancePtr
   allocateConnPool(Event::Dispatcher& dispatcher, HostConstSharedPtr host,
                    ResourcePriority priority, Http::Protocol protocol,
-                   const Network::ConnectionSocket::OptionsSharedPtr& options) override;
+                   const Network::ConnectionSocket::OptionsSharedPtr& options,
+                   std::shared_ptr<std::vector<Network::TransportSocketOptionsSharedPtr>> transport_options) override;
   Tcp::ConnectionPool::InstancePtr
   allocateTcpConnPool(Event::Dispatcher& dispatcher, HostConstSharedPtr host,
                       ResourcePriority priority,

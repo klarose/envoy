@@ -5,6 +5,7 @@
 
 #include "envoy/common/pure.h"
 #include "envoy/router/router.h"
+#include "envoy/stream_info/stream_info.h"
 #include "envoy/upstream/types.h"
 #include "envoy/upstream/upstream.h"
 
@@ -71,6 +72,8 @@ public:
    * ignored.
    */
   virtual uint32_t hostSelectionRetryCount() const PURE;
+
+  virtual const StreamInfo::StreamInfo* streamInfo() const PURE;
 };
 
 /**

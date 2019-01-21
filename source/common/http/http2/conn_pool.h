@@ -7,6 +7,7 @@
 #include "envoy/event/timer.h"
 #include "envoy/http/conn_pool.h"
 #include "envoy/network/connection.h"
+#include "envoy/network/transport_socket.h"
 #include "envoy/stats/timespan.h"
 #include "envoy/upstream/upstream.h"
 
@@ -26,7 +27,8 @@ class ConnPoolImpl : public ConnectionPool::Instance, public ConnPoolImplBase {
 public:
   ConnPoolImpl(Event::Dispatcher& dispatcher, Upstream::HostConstSharedPtr host,
                Upstream::ResourcePriority priority,
-               const Network::ConnectionSocket::OptionsSharedPtr& options);
+               const Network::ConnectionSocket::OptionsSharedPtr& options,
+               std::shared_ptr<std::vector<Network::TransportSocketOptionsSharedPtr>> transport_options);
   ~ConnPoolImpl();
 
   // Http::ConnectionPool::Instance
@@ -94,6 +96,7 @@ protected:
   ActiveClientPtr draining_client_;
   std::list<DrainedCb> drained_callbacks_;
   const Network::ConnectionSocket::OptionsSharedPtr socket_options_;
+  std::shared_ptr<std::vector<Network::TransportSocketOptionsSharedPtr>> transport_options_;
 };
 
 /**

@@ -25,6 +25,7 @@ envoy_cc_library(
         "//include/envoy/http:codes_interface",
         "//include/envoy/http:header_map_interface",
         "//include/envoy/network:connection_interface",
+        "//include/envoy/network:transport_socket_interface",
         "//include/envoy/stats:stats_interface",
         "//include/envoy/stats:stats_macros",
         "//source/common/buffer:buffer_lib",

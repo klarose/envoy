@@ -17,9 +17,10 @@ namespace Http2 {
 
 ConnPoolImpl::ConnPoolImpl(Event::Dispatcher& dispatcher, Upstream::HostConstSharedPtr host,
                            Upstream::ResourcePriority priority,
-                           const Network::ConnectionSocket::OptionsSharedPtr& options)
+                           const Network::ConnectionSocket::OptionsSharedPtr& options,
+                           std::shared_ptr<std::vector<Network::TransportSocketOptionsSharedPtr>> transport_options)
     : ConnPoolImplBase(std::move(host), std::move(priority)), dispatcher_(dispatcher),
-      socket_options_(options) {}
+      socket_options_(options), transport_options_(transport_options) {}
 
 ConnPoolImpl::~ConnPoolImpl() {
   if (primary_client_) {

@@ -238,7 +238,7 @@ private:
   Network::Address::InstanceConstSharedPtr downstream_direct_remote_address_;
   Network::Address::InstanceConstSharedPtr downstream_remote_address_;
   std::string requested_server_name_;
-  TransportSocketOptionsSharedPtr upstream_transport_options_;
+  TransportSocketOptionsSharedPtr upstream_transport_options_{std::make_shared<TransportSocketOptions>()};
 };
 
 } // namespace StreamInfo

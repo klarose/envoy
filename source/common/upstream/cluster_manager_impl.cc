@@ -1094,11 +1094,23 @@ ClusterManagerImpl::ThreadLocalClusterManagerImpl::ClusterEntry::connPool(
     }
   }
 
+  StreamInfo::StreamInfo::TransportSocketOptionsSharedPtr transport_options;
+  if(context->streamInfo())
+  {
+    transport_options = context->streamInfo()->getTransportSocketOptions();
+  }
+  if(transport_options != nullptr) {
+    for(const auto& option: *transport_options) {
+      option->hashKey(hash_key);
+    }
+  }
+
   ConnPoolsContainer& container = parent_.host_http_conn_pool_map_[host];
   if (!container.pools_[hash_key]) {
     container.pools_[hash_key] = parent_.parent_.factory_.allocateConnPool(
         parent_.thread_local_dispatcher_, host, priority, protocol,
-        have_options ? context->downstreamConnection()->socketOptions() : nullptr);
+        have_options ? context->downstreamConnection()->socketOptions() : nullptr,
+        transport_options);
   }
 
   return container.pools_[hash_key].get();
@@ -1160,14 +1172,15 @@ ClusterManagerPtr ProdClusterManagerFactory::clusterManagerFromProto(
 
 Http::ConnectionPool::InstancePtr ProdClusterManagerFactory::allocateConnPool(
     Event::Dispatcher& dispatcher, HostConstSharedPtr host, ResourcePriority priority,
-    Http::Protocol protocol, const Network::ConnectionSocket::OptionsSharedPtr& options) {
+    Http::Protocol protocol, const Network::ConnectionSocket::OptionsSharedPtr& options,
+    std::shared_ptr<std::vector<Network::TransportSocketOptionsSharedPtr>> transport_options) {
   if (protocol == Http::Protocol::Http2 &&
       runtime_.snapshot().featureEnabled("upstream.use_http2", 100)) {
     return Http::ConnectionPool::InstancePtr{
-        new Http::Http2::ProdConnPoolImpl(dispatcher, host, priority, options)};
+        new Http::Http2::ProdConnPoolImpl(dispatcher, host, priority, options, transport_options)};
   } else {
     return Http::ConnectionPool::InstancePtr{
-        new Http::Http1::ConnPoolImplProd(dispatcher, host, priority, options)};
+        new Http::Http1::ConnPoolImplProd(dispatcher, host, priority, options, transport_options)};
   }
 }
 

@@ -67,6 +67,7 @@ Http::FilterHeadersStatus UpstreamSniFromHeaderFilter::decodeHeaders(Http::Heade
 
 void UpstreamSniFromHeaderFilter::setDecoderFilterCallbacks(
     Http::StreamDecoderFilterCallbacks& callbacks) {
+  ENVOY_LOG(debug, "Setting decoder callbacks");
   decoder_callbacks_ = &callbacks;
 }
 
@@ -80,6 +81,7 @@ Http::FilterHeadersStatus UpstreamSniFromHeaderFilter::encodeHeaders(Http::Heade
 void UpstreamSniFromHeaderFilter::setEncoderFilterCallbacks(
     Http::StreamEncoderFilterCallbacks& callbacks) {
   encoder_callbacks_ = &callbacks;
+  ENVOY_LOG(debug, "Setting encoder callbacks");
 }
 
 void UpstreamSniFromHeaderFilter::writeSni(Http::HeaderMap& headers,
@@ -97,7 +99,6 @@ void UpstreamSniFromHeaderFilter::writeSni(Http::HeaderMap& headers,
 
       if (!value.empty()) {
         addSniOption(value);
-        headers.Host()->value(value);
         ENVOY_LOG(info, "Changing value to {}", value);
       } else {
         ENVOY_LOG(info, "value is empty, not changing header");

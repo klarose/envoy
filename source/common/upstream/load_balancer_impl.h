@@ -11,6 +11,7 @@
 #include "envoy/upstream/upstream.h"
 
 #include "common/protobuf/utility.h"
+#include "common/stream_info/stream_info_impl.h"
 #include "common/upstream/edf_scheduler.h"
 
 namespace Envoy {
@@ -148,6 +149,8 @@ public:
   bool shouldSelectAnotherHost(const Host&) override { return false; }
 
   uint32_t hostSelectionRetryCount() const override { return 1; }
+
+  const StreamInfo::StreamInfo* streamInfo() const override { return nullptr; }
 };
 
 /**

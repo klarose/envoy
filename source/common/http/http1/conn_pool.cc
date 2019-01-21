@@ -24,10 +24,12 @@ namespace Http1 {
 
 ConnPoolImpl::ConnPoolImpl(Event::Dispatcher& dispatcher, Upstream::HostConstSharedPtr host,
                            Upstream::ResourcePriority priority,
-                           const Network::ConnectionSocket::OptionsSharedPtr& options)
+                           const Network::ConnectionSocket::OptionsSharedPtr& options,
+                           std::shared_ptr<std::vector<Network::TransportSocketOptionsSharedPtr>> transport_options)
     : ConnPoolImplBase(std::move(host), std::move(priority)), dispatcher_(dispatcher),
       socket_options_(options),
-      upstream_ready_timer_(dispatcher_.createTimer([this]() { onUpstreamReady(); })) {}
+      upstream_ready_timer_(dispatcher_.createTimer([this]() { onUpstreamReady(); })),
+      transport_options_(transport_options) {}
 
 ConnPoolImpl::~ConnPoolImpl() {
   while (!ready_clients_.empty()) {
@@ -286,8 +288,13 @@ ConnPoolImpl::ActiveClient::ActiveClient(ConnPoolImpl& parent)
 
   parent_.conn_connect_ms_ = std::make_unique<Stats::Timespan>(
       parent_.host_->cluster().stats().upstream_cx_connect_ms_, parent_.dispatcher_.timeSystem());
-  Upstream::Host::CreateConnectionData data =
-      parent_.host_->createConnection(parent_.dispatcher_, parent_.socket_options_, nullptr);
+
+  Network::TransportSocketOptionsSharedPtr option;
+  if(parent.transport_options_ && !parent.transport_options_->empty()) {
+    option = (*parent.transport_options_)[0];
+  }
+
+  Upstream::Host::CreateConnectionData data = parent_.host_->createConnection(parent_.dispatcher_, parent_.socket_options_, option);
   real_host_description_ = data.host_description_;
   codec_client_ = parent_.createCodecClient(data);
   codec_client_->addConnectionCallbacks(*this);

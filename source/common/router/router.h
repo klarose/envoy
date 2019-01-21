@@ -237,6 +237,13 @@ public:
     return retry_state_->hostSelectionMaxAttempts();
   }
 
+  const StreamInfo::StreamInfo* streamInfo() const override {
+    if(callbacks_) {
+      return &callbacks_->streamInfo();
+    }
+    return nullptr;
+  }
+
   /**
    * Set a computed cookie to be sent with the downstream headers.
    * @param key supplies the size of the cookie
