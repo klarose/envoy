@@ -201,6 +201,13 @@ struct StreamInfoImpl : public StreamInfo {
 
   const std::string& requestedServerName() const override { return requested_server_name_; }
 
+  void addTransportSocketOption(Network::TransportSocketOptionsSharedPtr option) {
+    upstream_transport_options_->emplace_back(std::move(option));
+  }
+  TransportSocketOptionsSharedPtr getTransportSocketOptions() const{
+    return upstream_transport_options_;
+  }
+
   TimeSource& time_source_;
   const SystemTime start_time_;
   const MonotonicTime start_time_monotonic_;
@@ -231,6 +238,7 @@ private:
   Network::Address::InstanceConstSharedPtr downstream_direct_remote_address_;
   Network::Address::InstanceConstSharedPtr downstream_remote_address_;
   std::string requested_server_name_;
+  TransportSocketOptionsSharedPtr upstream_transport_options_;
 };
 
 } // namespace StreamInfo

@@ -8,6 +8,7 @@
 #include "envoy/common/pure.h"
 #include "envoy/common/time.h"
 #include "envoy/http/protocol.h"
+#include "envoy/network/transport_socket.h"
 #include "envoy/stream_info/filter_state.h"
 #include "envoy/upstream/host_description.h"
 
@@ -341,6 +342,14 @@ public:
    * @return SNI value for downstream host.
    */
   virtual const std::string& requestedServerName() const PURE;
+
+  /**
+   * Adds a transport socket option to be applied to the upstream connection
+   */
+  virtual void addTransportSocketOption(Network::TransportSocketOptionsSharedPtr option) PURE;
+  using TransportSocketOptions = std::vector<Network::TransportSocketOptionsSharedPtr>;
+  using TransportSocketOptionsSharedPtr = std::shared_ptr<TransportSocketOptions>;
+  virtual TransportSocketOptionsSharedPtr getTransportSocketOptions() const PURE;
 };
 
 } // namespace StreamInfo
