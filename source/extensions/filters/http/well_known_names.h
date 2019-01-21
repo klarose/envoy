@@ -52,6 +52,7 @@ public:
   const std::string HeaderToMetadata = "envoy.filters.http.header_to_metadata";
   // Tap filter
   const std::string Tap = "envoy.filters.http.tap";
+  const std::string UpstreamSniFromHeader = "envoy.filters.http.upstream_sni_from_header";
 
   // Converts names from v1 to v2
   const Config::V1Converter v1_converter_;
