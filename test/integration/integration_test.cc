@@ -784,6 +784,40 @@ TEST_P(IntegrationTest, NoConnectionPoolsFree) {
   EXPECT_EQ(test_server_->counter("cluster.cluster_0.upstream_cx_pool_overflow")->value(), 1);
 }
 
+TEST_P(IntegrationTest, TestOriginalSrcHttpFilter) {
+  std::string address_string;
+  if (GetParam() == Network::Address::IpVersion::v4) {
+    address_string = TestUtility::getIpv4Loopback();
+  } else {
+    address_string = "::1";
+  }
+
+  config_helper_.addFilter("{ name: envoy.filters.http.original_src, config: {} }");
+
+  initialize();
+
+  codec_client_ = makeHttpConnection(lookupPort("http"));
+
+  auto response = codec_client_->makeRequestWithBody(
+      Http::TestHeaderMapImpl{{":method", "GET"},
+                              {":path", "/test/long/url"},
+                              {":scheme", "http"},
+                              {":authority", "host"},
+                              {"x-forwarded-for", address_string}},
+      1024);
+
+  ASSERT_TRUE(fake_upstreams_[0]->waitForHttpConnection(*dispatcher_, fake_upstream_connection_));
+  ASSERT_NE(fake_upstream_connection_, nullptr);
+  std::string address =
+      fake_upstream_connection_->connection().remoteAddress()->ip()->addressAsString();
+  EXPECT_EQ(address, address_string);
+  ASSERT_TRUE(fake_upstream_connection_->waitForNewStream(*dispatcher_, upstream_request_));
+  ASSERT_NE(upstream_request_, nullptr);
+  ASSERT_TRUE(upstream_request_->waitForEndStream(*dispatcher_));
+
+  cleanupUpstreamAndDownstream();
+}
+
 INSTANTIATE_TEST_SUITE_P(IpVersions, UpstreamEndpointIntegrationTest,
                          testing::ValuesIn(TestEnvironment::getIpVersionsForTest()),
                          TestUtility::ipTestParamsToString);
